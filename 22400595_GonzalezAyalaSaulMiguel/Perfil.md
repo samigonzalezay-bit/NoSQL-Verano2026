@@ -17,8 +17,15 @@
 - Java, JavaScript, Python, html, php,css
 - MySQL
 
+## Peliculas Y series
+- Interestelar
+- Openhaimer
+- TeenWolf
+- Cobra Kai
+
 
 ## 📫 Cómo contactarme
 - Correo: samigonzalezay@ittepic.edu.mx
   
 - Cel: 3111195486
+  
