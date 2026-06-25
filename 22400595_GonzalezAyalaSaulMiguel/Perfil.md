@@ -1,4 +1,4 @@
-<img src="https://avatars.githubusercontent.com/u/242038794?v=4" width="150" alt="Foto de perfil de Saul Gonzalez" />
+<img src="https://avatars.githubusercontent.com/u/242038794?v=4" width="250" alt="Foto de perfil de Saul Gonzalez" />
 
 # 👋 Hola, soy Saul Miguel Gonzalez Ayala
 
