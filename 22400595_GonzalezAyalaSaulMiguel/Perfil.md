@@ -19,6 +19,6 @@
 
 
 ## 📫 Cómo contactarme
-- Correo: neesgonzalezno@ittepic.edu.mx
+- Correo: samigonzalezay@ittepic.edu.mx
   
 - Cel: 3111195486
