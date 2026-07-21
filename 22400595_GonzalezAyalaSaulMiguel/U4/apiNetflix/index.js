@@ -260,8 +260,63 @@ app.delete("/alumnos/:id", async (req, res) => {
 
 /* =====================================================
    OTRAS RUTAS
-===================================================== */
-app.get("/peliculas", async (req, res) => {
+
+   ===================================================== */
+app.post("/peliculas", async (req, res) => {
+    try {
+        const {
+            titulo,
+            genero,
+            año,
+            duracion,
+            idioma,
+            calificacion
+        } = req.body;
+
+        if (
+            !titulo ||
+            !genero ||
+            año === undefined ||
+            duracion === undefined ||
+            !idioma ||
+            calificacion === undefined
+        ) {
+            return res.status(400).json({
+                mensaje: "Faltan datos de la película"
+            });
+        }
+
+        const nuevaPelicula = new Pelicula({
+            titulo,
+            genero,
+            año,
+            duracion,
+            idioma,
+            calificacion,
+            nc: "22400595"
+        });
+
+        const peliculaGuardada =
+            await nuevaPelicula.save();
+
+        res.status(201).json({
+            mensaje: "Película guardada correctamente",
+            pelicula: peliculaGuardada
+        });
+
+    } catch (error) {
+        console.error(
+            "ERROR AL GUARDAR PELÍCULA:",
+            error
+        );
+
+        res.status(500).json({
+            mensaje: "Error al guardar la película",
+            error: error.message
+        });
+    }
+});
+   app.get("/peliculas", async (req, res) => {
     try {
         const peliculas = await Pelicula.find();
 
