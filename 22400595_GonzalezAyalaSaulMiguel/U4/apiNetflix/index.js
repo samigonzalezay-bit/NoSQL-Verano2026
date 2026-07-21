@@ -1,11 +1,13 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
 const PORT = 3000;
 
 // Middlewares
+app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
@@ -40,6 +42,19 @@ const Alumno = mongoose.model(
     "Alumno",
     alumnoSchema,
     "alumnos"
+);
+
+const peliculaSchema = new mongoose.Schema(
+    {},
+    {
+        strict: false
+    }
+);
+
+const Pelicula = mongoose.model(
+    "Pelicula",
+    peliculaSchema,
+    "peliculas"
 );
 
 /* =====================================================
@@ -246,6 +261,27 @@ app.delete("/alumnos/:id", async (req, res) => {
 /* =====================================================
    OTRAS RUTAS
 ===================================================== */
+app.get("/peliculas", async (req, res) => {
+    try {
+        const peliculas = await Pelicula.find();
+
+        res.json({
+            cantidad: peliculas.length,
+            peliculas: peliculas
+        });
+
+    } catch (error) {
+        console.error(
+            "ERROR AL OBTENER PELÍCULAS:",
+            error
+        );
+
+        res.status(500).json({
+            mensaje: "Error al obtener las películas",
+            error: error.message
+        });
+    }
+});
 
 app.get("/", (req, res) => {
     res.send("HOLA MUNDO");
