@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Catálogo de películas</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <h1>Películas</h1>
+
+    <h2>Registrar película</h2>
+
+    <form id="formulario">
+
+        <input
+            type="text"
+            id="titulo"
+            placeholder="Título"
+            required
+        >
+
+        <input
+            type="text"
+            id="genero"
+            placeholder="Género"
+            required
+        >
+
+        <input
+            type="number"
+            id="año"
+            placeholder="Año"
+            min="1888"
+            max="2100"
+            required
+        >
+
+        <input
+            type="number"
+            id="duracion"
+            placeholder="Duración en minutos"
+            min="1"
+            required
+        >
+
+        <input
+            type="text"
+            id="idioma"
+            placeholder="Idioma"
+            required
+        >
+
+        <input
+            type="number"
+            id="calificacion"
+            placeholder="Calificación"
+            min="0"
+            max="10"
+            step="0.1"
+            required
+        >
+
+        <input
+            type="url"
+            id="portada"
+            placeholder="URL de la portada"
+            required
+        >
+
+        <button type="submit" id="btnGuardar">
+            Guardar película
+        </button>
+
+    </form>
+
+    <hr>
+
+    <button type="button" id="btnConsultar">
+        Consultar películas
+    </button>
+
+    <ul id="listaPeliculas"></ul>
+
+    <!-- api.js debe cargarse antes que app.js -->
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+
+</body>
+
+</html>

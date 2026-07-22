@@ -1,18 +1,21 @@
 const express = require("express");
 const morgan = require("morgan");
-const cors = require("cors");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middlewares
+/* =====================================================
+   MIDDLEWARES
+===================================================== */
+
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
 /* =====================================================
-   ESQUEMA Y MODELO DE MONGODB
+   ESQUEMA Y MODELO DE ALUMNOS
 ===================================================== */
 
 const alumnoSchema = new mongoose.Schema(
@@ -44,10 +47,19 @@ const Alumno = mongoose.model(
     "alumnos"
 );
 
+/* =====================================================
+   ESQUEMA Y MODELO DE PELÍCULAS
+===================================================== */
+
+/*
+    strict: false permite leer todos los campos que
+    ya existen en la colección "peliculas".
+*/
 const peliculaSchema = new mongoose.Schema(
     {},
     {
-        strict: false
+        strict: false,
+        timestamps: true
     }
 );
 
@@ -58,16 +70,120 @@ const Pelicula = mongoose.model(
 );
 
 /* =====================================================
-   RUTAS CRUD DE ALUMNOS
+   CRUD DE PELÍCULAS
+===================================================== */
+
+/*
+    OBTENER TODAS LAS PELÍCULAS
+    GET /peliculas
+*/
+app.get("/peliculas", async (req, res) => {
+    try {
+        const peliculas = await Pelicula.find()
+            .sort({ titulo: 1 });
+
+        res.json({
+            cantidad: peliculas.length,
+            peliculas: peliculas
+        });
+
+    } catch (error) {
+        console.error(
+            "ERROR AL OBTENER PELÍCULAS:",
+            error
+        );
+
+        res.status(500).json({
+            mensaje: "Error al obtener las películas",
+            error: error.message
+        });
+    }
+});
+
+/*
+    GUARDAR UNA PELÍCULA
+    POST /peliculas
+*/
+app.post("/peliculas", async (req, res) => {
+    try {
+        const {
+            titulo,
+            genero,
+            año,
+            duracion,
+            idioma,
+            calificacion
+        } = req.body;
+
+        if (
+            !titulo ||
+            !genero ||
+            año === undefined ||
+            duracion === undefined ||
+            !idioma ||
+            calificacion === undefined
+        ) {
+            return res.status(400).json({
+                mensaje: "Faltan datos de la película"
+            });
+        }
+
+        if (
+            Number(calificacion) < 0 ||
+            Number(calificacion) > 10
+        ) {
+            return res.status(400).json({
+                mensaje:
+                    "La calificación debe estar entre 0 y 10"
+            });
+        }
+
+        const nuevaPelicula = new Pelicula({
+            titulo: titulo.trim(),
+            genero: genero.trim(),
+            año: Number(año),
+            duracion: Number(duracion),
+            idioma: idioma.trim(),
+            calificacion: Number(calificacion),
+            nc: "22400595"
+        });
+
+        const peliculaGuardada =
+            await nuevaPelicula.save();
+
+        res.status(201).json({
+            mensaje: "Película guardada correctamente",
+            pelicula: peliculaGuardada
+        });
+
+    } catch (error) {
+        console.error(
+            "ERROR AL GUARDAR PELÍCULA:",
+            error
+        );
+
+        res.status(500).json({
+            mensaje: "Error al guardar la película",
+            error: error.message
+        });
+    }
+});
+
+/* =====================================================
+   CRUD DE ALUMNOS
 ===================================================== */
 
 /*
     CREAR UN ALUMNO
-    POST http://localhost:3000/alumnos
+    POST /alumnos
 */
 app.post("/alumnos", async (req, res) => {
     try {
-        const { nombre, carrera, semestre } = req.body;
+        const {
+            nombre,
+            carrera,
+            semestre
+        } = req.body;
 
         if (
             !nombre ||
@@ -85,7 +201,8 @@ app.post("/alumnos", async (req, res) => {
             semestre
         });
 
-        const alumnoGuardado = await nuevoAlumno.save();
+        const alumnoGuardado =
+            await nuevoAlumno.save();
 
         res.status(201).json({
             mensaje: "Alumno registrado correctamente",
@@ -93,7 +210,10 @@ app.post("/alumnos", async (req, res) => {
         });
 
     } catch (error) {
-        console.error("ERROR AL GUARDAR:", error);
+        console.error(
+            "ERROR AL GUARDAR ALUMNO:",
+            error
+        );
 
         res.status(500).json({
             mensaje: "Error al guardar alumno",
@@ -104,7 +224,7 @@ app.post("/alumnos", async (req, res) => {
 
 /*
     OBTENER TODOS LOS ALUMNOS
-    GET http://localhost:3000/alumnos
+    GET /alumnos
 */
 app.get("/alumnos", async (req, res) => {
     try {
@@ -116,7 +236,10 @@ app.get("/alumnos", async (req, res) => {
         });
 
     } catch (error) {
-        console.error("ERROR AL OBTENER ALUMNOS:", error);
+        console.error(
+            "ERROR AL OBTENER ALUMNOS:",
+            error
+        );
 
         res.status(500).json({
             mensaje: "Error al obtener los alumnos",
@@ -127,16 +250,16 @@ app.get("/alumnos", async (req, res) => {
 
 /*
     OBTENER UN ALUMNO POR ID
-    GET http://localhost:3000/alumnos/ID
+    GET /alumnos/:id
 */
 app.get("/alumnos/:id", async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Verifica que el ID tenga formato válido de MongoDB
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
-                mensaje: "El ID proporcionado no es válido"
+                mensaje:
+                    "El ID proporcionado no es válido"
             });
         }
 
@@ -151,7 +274,10 @@ app.get("/alumnos/:id", async (req, res) => {
         res.json(alumno);
 
     } catch (error) {
-        console.error("ERROR AL OBTENER ALUMNO:", error);
+        console.error(
+            "ERROR AL OBTENER ALUMNO:",
+            error
+        );
 
         res.status(500).json({
             mensaje: "Error al obtener alumno",
@@ -162,16 +288,22 @@ app.get("/alumnos/:id", async (req, res) => {
 
 /*
     ACTUALIZAR UN ALUMNO
-    PUT http://localhost:3000/alumnos/ID
+    PUT /alumnos/:id
 */
 app.put("/alumnos/:id", async (req, res) => {
     try {
         const id = req.params.id;
-        const { nombre, carrera, semestre } = req.body;
+
+        const {
+            nombre,
+            carrera,
+            semestre
+        } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
-                mensaje: "El ID proporcionado no es válido"
+                mensaje:
+                    "El ID proporcionado no es válido"
             });
         }
 
@@ -206,12 +338,16 @@ app.put("/alumnos/:id", async (req, res) => {
         }
 
         res.json({
-            mensaje: "Alumno actualizado correctamente",
+            mensaje:
+                "Alumno actualizado correctamente",
             alumno: alumnoActualizado
         });
 
     } catch (error) {
-        console.error("ERROR AL ACTUALIZAR:", error);
+        console.error(
+            "ERROR AL ACTUALIZAR ALUMNO:",
+            error
+        );
 
         res.status(500).json({
             mensaje: "Error al actualizar alumno",
@@ -222,7 +358,7 @@ app.put("/alumnos/:id", async (req, res) => {
 
 /*
     ELIMINAR UN ALUMNO
-    DELETE http://localhost:3000/alumnos/ID
+    DELETE /alumnos/:id
 */
 app.delete("/alumnos/:id", async (req, res) => {
     try {
@@ -230,7 +366,8 @@ app.delete("/alumnos/:id", async (req, res) => {
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
-                mensaje: "El ID proporcionado no es válido"
+                mensaje:
+                    "El ID proporcionado no es válido"
             });
         }
 
@@ -249,7 +386,10 @@ app.delete("/alumnos/:id", async (req, res) => {
         });
 
     } catch (error) {
-        console.error("ERROR AL ELIMINAR:", error);
+        console.error(
+            "ERROR AL ELIMINAR ALUMNO:",
+            error
+        );
 
         res.status(500).json({
             mensaje: "Error al eliminar alumno",
@@ -260,83 +400,7 @@ app.delete("/alumnos/:id", async (req, res) => {
 
 /* =====================================================
    OTRAS RUTAS
-
-   ===================================================== */
-app.post("/peliculas", async (req, res) => {
-    try {
-        const {
-            titulo,
-            genero,
-            año,
-            duracion,
-            idioma,
-            calificacion
-        } = req.body;
-
-        if (
-            !titulo ||
-            !genero ||
-            año === undefined ||
-            duracion === undefined ||
-            !idioma ||
-            calificacion === undefined
-        ) {
-            return res.status(400).json({
-                mensaje: "Faltan datos de la película"
-            });
-        }
-
-        const nuevaPelicula = new Pelicula({
-            titulo,
-            genero,
-            año,
-            duracion,
-            idioma,
-            calificacion,
-            nc: "22400595"
-        });
-
-        const peliculaGuardada =
-            await nuevaPelicula.save();
-
-        res.status(201).json({
-            mensaje: "Película guardada correctamente",
-            pelicula: peliculaGuardada
-        });
-
-    } catch (error) {
-        console.error(
-            "ERROR AL GUARDAR PELÍCULA:",
-            error
-        );
-
-        res.status(500).json({
-            mensaje: "Error al guardar la película",
-            error: error.message
-        });
-    }
-});
-   app.get("/peliculas", async (req, res) => {
-    try {
-        const peliculas = await Pelicula.find();
-
-        res.json({
-            cantidad: peliculas.length,
-            peliculas: peliculas
-        });
-
-    } catch (error) {
-        console.error(
-            "ERROR AL OBTENER PELÍCULAS:",
-            error
-        );
-
-        res.status(500).json({
-            mensaje: "Error al obtener las películas",
-            error: error.message
-        });
-    }
-});
+===================================================== */
 
 app.get("/", (req, res) => {
     res.send("HOLA MUNDO");
@@ -404,13 +468,15 @@ app.get("/multiplicar/:a/:b", (req, res) => {
 });
 
 app.get("/aleatorio", (req, res) => {
-    const numero = Math.floor(Math.random() * 100) + 1;
+    const numero =
+        Math.floor(Math.random() * 100) + 1;
 
     res.send(`Número generado: ${numero}`);
 });
 
 /* =====================================================
-   RUTA PARA DIRECCIONES NO EXISTENTES
+   RUTA 404
+   SIEMPRE DEBE IR DESPUÉS DE TODAS LAS RUTAS
 ===================================================== */
 
 app.use((req, res) => {
@@ -420,21 +486,23 @@ app.use((req, res) => {
 });
 
 /* =====================================================
-   CONEXIÓN A MONGODB E INICIO DEL SERVIDOR
+   CONEXIÓN A MONGODB
 ===================================================== */
 
 async function iniciarServidor() {
     try {
-                    await mongoose.connect(
-                process.env.MONGODB_URI ||
-                "mongodb://127.0.0.1:27017/netflix"
-            );
+        await mongoose.connect(
+            process.env.MONGODB_URI ||
+            "mongodb://127.0.0.1:27017/netflix"
+        );
 
-        console.log("CONECTADO CORRECTAMENTE A MONGODB");
+        console.log(
+            "CONECTADO CORRECTAMENTE A MONGODB"
+        );
 
         app.listen(PORT, () => {
             console.log(
-                `Servidor iniciado en http://localhost:${PORT}`
+                `Servidor iniciado en el puerto ${PORT}`
             );
         });
 
